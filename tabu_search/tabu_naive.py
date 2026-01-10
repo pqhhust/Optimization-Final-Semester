@@ -34,10 +34,10 @@ class TabuSolver:
         self.t = t_list
         
         # Cấu hình Tabu
-        self.max_iter = 2000
+        self.max_iter = 1500
         self.tabu_tenure = 15
         self.tabu_list = {}
-        self.num_neighbors = 100 
+        self.num_neighbors = 50 
         
         # Trọng số phạt
         self.W_count = 10000
