@@ -173,7 +173,7 @@ def solve():
                         best_k = k_idx
             if best_k != -1:
                 councils[best_k].teachers.append(j)
-                curr_c_teacher[j] = councils[best_k].id   # ✅ FIX BUG (bạn gán nhầm best_k)
+                curr_c_teacher[j] = councils[best_k].id   
 
         # Đếm số người được gán (đúng)
         assigned_count = (N - curr_c_thesis[1:].count(0)) + (M - curr_c_teacher[1:].count(0))
@@ -315,7 +315,7 @@ def solve():
         return res_th, res_te, current_score
 
     # 6) MULTI-START
-    TOTAL_TIME = 1.85  
+    TOTAL_TIME = 30
     start_all = time.time()
 
     best_thesis_assign = None
@@ -327,7 +327,7 @@ def solve():
         assigned_count, th, te = run_one_pass()
 
         # hill climb trên bản copy
-        th2, te2, sc = hill_climbing(th[:], te[:], max_iter=260, max_time=0.08)
+        th2, te2, sc = hill_climbing(th[:], te[:], max_iter=250, max_time=0.08)
 
         # Ưu tiên gán được nhiều người trước, sau đó mới xét score
         if assigned_count > best_assigned or (assigned_count == best_assigned and sc > best_score):
@@ -346,6 +346,7 @@ def solve():
     out.append(" ".join(map(str, best_thesis_assign[1:])))
     out.append(str(M))
     out.append(" ".join(map(str, best_teacher_assign[1:])))
+    print(best_score)
     sys.stdout.write("\n".join(out))
 
 

@@ -198,10 +198,10 @@ def solve():
             
             if best_k != -1:
                 councils[best_k].teachers.append(j)
-                curr_c_teacher[best_k] = councils[best_k].id
+                curr_c_teacher[j] = councils[best_k].id
 
         # Này là đếm số thằng chưa được gán trong lời giải
-        assigned_count = (N + 1 - curr_c_thesis.count(0)) + (M + 1 - curr_c_teacher.count(0))
+        assigned_count = (N - curr_c_thesis.count(0)) + (M - curr_c_teacher.count(0))
         return assigned_count, curr_c_thesis, curr_c_teacher
 
 
@@ -238,7 +238,7 @@ def solve():
     best_thesis_assign = [0] * (N + 1)
     best_teacher_assign = [0] * (M + 1)
     
-    MAX_ITER = 200
+    MAX_ITER = 5000
     
     for i in range(MAX_ITER):
         curr_cnt, curr_th, curr_te = run_one_pass()
@@ -265,6 +265,7 @@ def solve():
     print(*(best_thesis_assign[1:]))
     print(M)
     print(*(best_teacher_assign[1:]))
+    print(best_total_score)
 
 if __name__ == '__main__':
     solve()
