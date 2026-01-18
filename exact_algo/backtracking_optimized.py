@@ -1,6 +1,5 @@
-# Backtracking Optimized với Early Pruning
+import time
 
-# Đọc dữ liệu đầu vào
 N, M, K = map(int, input().split())
 a, b, c, d, e, f = map(int, input().split())
 s = [[0] for _ in range(N+1)]
@@ -27,6 +26,9 @@ optimal_total = 0
 hda = [[] for _ in range(K+1)]
 hdb = [[] for _ in range(K+1)]
 
+assigned_projects_count = 0
+assigned_teachers_count = 0
+
 # Kiểm tra xem có thể gán đồ án k vào hội đồng v không
 def checkX(v, k):
     if len(hda[v]) >= b: return False
@@ -44,32 +46,34 @@ def checkY(v, k):
 
 # Early pruning: kiểm tra xem còn đủ khả năng đạt ràng buộc tối thiểu không
 def canReachMinConstraint():
+    global assigned_projects_count, assigned_teachers_count
+    
     # Kiểm tra cho đồ án
-    assigned_projects = sum(len(hda[k]) for k in range(1, K+1))
-    remaining_projects = N - assigned_projects
+    remaining_projects = N - assigned_projects_count
     
     # Tính tổng số đồ án còn thiếu để các hội đồng đạt tối thiểu a
     total_needed = 0
     for k in range(1, K+1):
-        if len(hda[k]) > b:
+        size = len(hda[k])
+        if size > b:
             return False
-        if len(hda[k]) < a:
-            total_needed += (a - len(hda[k]))
+        if size < a:
+            total_needed += (a - size)
     
     if total_needed > remaining_projects:
         return False
     
     # Kiểm tra cho giáo viên (chỉ khi đã gán hết đồ án)
-    if assigned_projects == N:
-        assigned_teachers = sum(len(hdb[k]) for k in range(1, K+1))
-        remaining_teachers = M - assigned_teachers
+    if assigned_projects_count == N:
+        remaining_teachers = M - assigned_teachers_count
         
         total_needed_teachers = 0
         for k in range(1, K+1):
-            if len(hdb[k]) > d:
+            size = len(hdb[k]) 
+            if size > d:
                 return False
-            if len(hdb[k]) < c:
-                total_needed_teachers += (c - len(hdb[k]))
+            if size < c:
+                total_needed_teachers += (c - size)
         
         if total_needed_teachers > remaining_teachers:
             return False
@@ -93,7 +97,6 @@ def sol():
     
     total = 0 
     for p in range(1, K+1):
-        # Tối ưu: dùng index thay vì so sánh i1 < i2
         for i1 in range(len(hda[p])):
             for i2 in range(i1 + 1, len(hda[p])):
                 total += s[hda[p][i1]][hda[p][i2]]
@@ -103,12 +106,14 @@ def sol():
     
     if total > optimal_total:
         optimal_total = total
-        rx = x[:]  # Copy nhanh hơn list()
+        rx = x[:]  
         ry = y[:]
 
 # Hàm quay lui để gán giáo viên
 def TryY(k):
-    # Early pruning: dừng sớm nếu không thể đạt ràng buộc tối thiểu
+    global assigned_teachers_count
+    
+    # Early pruning: LUÔN kiểm tra (không bỏ qua khi count = 0)
     if not canReachMinConstraint():
         return
     
@@ -116,16 +121,23 @@ def TryY(k):
         if checkY(v, k):
             y[k] = v
             hdb[v].append(k)
+            assigned_teachers_count += 1
+            
             if k == M:
                 sol()
             else:
                 TryY(k+1)
-            hdb[v].pop()  # pop() nhanh hơn remove() với phần tử cuối
+            
+            hdb[v].pop() 
+            assigned_teachers_count -= 1
             y[k] = 0
 
 # Hàm quay lui để gán đồ án
 def TryX(k):
-    # Early pruning: dừng sớm nếu không thể đạt ràng buộc tối thiểu
+    global assigned_projects_count
+    
+    # Early pruning: LUÔN kiểm tra (không bỏ qua khi count = 0)
+    # Ví dụ: nếu K * a > N thì không thể phân bổ được
     if not canReachMinConstraint():
         return
     
@@ -133,14 +145,22 @@ def TryX(k):
         if checkX(v, k):
             x[k] = v
             hda[v].append(k)
+            assigned_projects_count += 1
+            
             if k == N:
                 TryY(1)
             else:
                 TryX(k+1)
-            hda[v].pop()  # pop() nhanh hơn remove() với phần tử cuối
+            
+            hda[v].pop()
+            assigned_projects_count -= 1
             x[k] = 0
 
+# Bắt đầu đo thời gian
+start_time = time.time()
 TryX(1)
+end_time = time.time()
+execution_time = end_time - start_time
 
 print(N)
 for i in range(1, N + 1): 
@@ -149,3 +169,6 @@ print()
 print(M)
 for j in range(1, M + 1): 
     print(ry[j], end = " ")
+print()
+print(f"Objective value: {optimal_total}")
+print(f"Execution time: {execution_time:.5f} seconds")

@@ -1,6 +1,6 @@
 # Backtracking
+import time
 
-# Đọc dữ liệu đầu vào
 N, M, K = map(int, input().split())
 a, b, c, d, e, f = map(int, input().split())
 s = [[0] for _ in range(N+1)]
@@ -93,11 +93,16 @@ def TryX(k):
             else: TryX(k+1)
             hda[v].remove(k)
 
+start_time = time.time()
 TryX(1)
-
+end_time = time.time()
+execution_time = end_time - start_time
 
 print(N)
 for i in range(1, N + 1): print(rx[i], end = " ")
 print()
 print(M)
 for j in range(1, M + 1): print(ry[j], end = " ")
+print()
+print(f"Objective value: {optimal_total}")
+print(f"Execution time: {execution_time:.5f} seconds")

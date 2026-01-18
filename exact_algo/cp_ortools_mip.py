@@ -1,12 +1,15 @@
 from ortools.linear_solver import pywraplp
+import time
+import os
 
 # Sử dụng OR-Tools Linear Solver (MIP - Mixed Integer Programming)
 # Sử dụng SCIP solver (có thể thay bằng CBC nếu không có SCIP)
 solver = pywraplp.Solver.CreateSolver('SCIP')
 if not solver:
-    solver = pywraplp.Solver.CreateSolver('CBC')  # Fallback nếu không có SCIP
+    solver = pywraplp.Solver.CreateSolver('CBC')
 
-# Đọc dữ liệu đầu vào
+num_cores = 40
+
 N, M, K = map(int, input().split())
 a, b, c, d, e, f = map(int, input().split())
 s = [[0] for _ in range(N+1)]
@@ -17,8 +20,24 @@ for i in range(1, N+1):
     g[i] = [0] + list(map(int, input().split()))
 t = [0] + list(map(int, input().split()))
 
-# Thiết lập timeout (giây)
-solver.SetTimeLimit(300000)  # 300 giây = 300000 milliseconds
+
+solver.SetTimeLimit(144000000)  # 40 giờ
+
+# Tối ưu tham số cho MIP solver dựa trên solver được sử dụng
+try:
+    solver_name = solver.SolverVersion()
+    if 'SCIP' in solver_name:
+        solver.SetSolverSpecificParametersAsString('limits/time = 144000000')
+        solver.SetSolverSpecificParametersAsString(f'parallel/maxnthreads = {num_cores}')
+        solver.SetSolverSpecificParametersAsString('presolving/maxrounds = 100')
+        solver.SetSolverSpecificParametersAsString('separating/maxrounds = 10')
+        solver.SetSolverSpecificParametersAsString(f'lp/threads = {num_cores}')
+    elif 'CBC' in solver_name:
+        solver.SetSolverSpecificParametersAsString(f'threads {num_cores}')
+        solver.SetSolverSpecificParametersAsString('seconds 144000000')
+        solver.SetSolverSpecificParametersAsString('preprocess on')
+except:
+    pass
 
 # x[i, k] = 1 nếu đồ án i được phân vào hội đồng k
 x = {}
@@ -129,9 +148,11 @@ for k in range(1, K + 1):
 objective.SetMaximization()
 
 # Giải bài toán
+start_time = time.time()
 status = solver.Solve()
+end_time = time.time()
+execution_time = end_time - start_time
 
-# In kết quả
 if status == pywraplp.Solver.OPTIMAL or status == pywraplp.Solver.FEASIBLE:
     print(N)
     result_x = []
@@ -150,4 +171,10 @@ if status == pywraplp.Solver.OPTIMAL or status == pywraplp.Solver.FEASIBLE:
                 result_y.append(str(k))
                 break
     print(' '.join(result_y))
+    objective_value = solver.Objective().Value()
+    if status == pywraplp.Solver.OPTIMAL:
+        print(f"Objective value: {int(objective_value)} (OPTIMAL - exact solution)")
+    else:
+        print(f"Objective value: {int(objective_value)} (FEASIBLE - may not be optimal)")
+    print(f"Execution time: {execution_time:.5f} seconds")
 
