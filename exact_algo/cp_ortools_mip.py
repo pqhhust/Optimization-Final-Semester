@@ -20,10 +20,8 @@ for i in range(1, N+1):
     g[i] = [0] + list(map(int, input().split()))
 t = [0] + list(map(int, input().split()))
 
-
 solver.SetTimeLimit(144000000)  # 40 giờ
 
-# Tối ưu tham số cho MIP solver dựa trên solver được sử dụng
 try:
     solver_name = solver.SolverVersion()
     if 'SCIP' in solver_name:
@@ -103,7 +101,6 @@ for i in range(1, N + 1):
                 constraint.SetCoefficient(x[i, k], 1)
                 constraint.SetCoefficient(y[j, k], 1)
 
-# Xây dựng hàm mục tiêu: tối đa hóa tổng độ tương đồng
 objective = solver.Objective()
 
 # Tạo biến phụ trợ cho tích của 2 biến Boolean
@@ -147,7 +144,6 @@ for k in range(1, K + 1):
 
 objective.SetMaximization()
 
-# Giải bài toán
 start_time = time.time()
 status = solver.Solve()
 end_time = time.time()

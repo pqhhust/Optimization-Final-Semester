@@ -4,8 +4,8 @@ import time
 model = cp_model.CpModel()
 solver = cp_model.CpSolver()
 
-solver.parameters.max_time_in_seconds = 14400.0
-solver.parameters.num_search_workers = 40
+solver.parameters.max_time_in_seconds = 144000.0 
+solver.parameters.num_search_workers = 50
 solver.parameters.log_search_progress = False
 solver.parameters.linearization_level = 2
 solver.parameters.cp_model_presolve = True
@@ -72,7 +72,7 @@ for i in range(1, N + 1):
 
 obj_terms = []
 for k in range(1, K + 1):
-    # Tổng độ tương đồng giữa các đồ án s(i, j)
+    # 1. Tổng độ tương đồng giữa các đồ án s(i, j)
     for i1 in range(1, N + 1):
         for i2 in range(i1 + 1, N + 1):
             # Chỉ xét những cặp thỏa mãn ngưỡng tương đồng e
@@ -83,7 +83,7 @@ for k in range(1, K + 1):
                 model.Add(z >= x[i1, k] + x[i2, k] - 1)
                 obj_terms.append(z * s[i1][i2])
 
-    # Tổng độ tương đồng giữa đồ án i và giáo viên j
+    # 2. Tổng độ tương đồng giữa đồ án i và giáo viên j
     for i in range(1, N + 1):
         for j in range(1, M + 1):
             # Chỉ xét nếu giáo viên không hướng dẫn và thỏa mãn ngưỡng tương đồng f
@@ -96,13 +96,17 @@ for k in range(1, K + 1):
 
 model.Maximize(sum(obj_terms))
 
-# Bắt đầu đo thời gian
 start_time = time.time()
 status = solver.Solve(model)
 end_time = time.time()
 execution_time = end_time - start_time
 
 if status == cp_model.OPTIMAL or status == cp_model.FEASIBLE:
+    if status == cp_model.OPTIMAL:
+        print("Status: OPTIMAL")
+    else:
+        print("Status: FEASIBLE")
+    
     print(N)
     for i in range(1, N + 1):
         for k in range(1, K + 1):
