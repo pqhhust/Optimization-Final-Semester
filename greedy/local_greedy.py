@@ -13,9 +13,7 @@ class Council:
         self.teachers = []  # ID giáo viên (1-based)
 
 def solve():
-    # ==========================================================
     # 1. ĐỌC DỮ LIỆU
-    # ==========================================================
     try:
         line1 = input().split()
         if not line1: return
@@ -37,9 +35,7 @@ def solve():
     # Hằng số phạt cho Unassigned
     ALPHA = 1000000 
 
-    # ==========================================================
     # 2. CÁC HÀM CHECK RÀNG BUỘC
-    # ==========================================================
     def check_thesis(u, council_theses, council_teachers):
         if len(council_theses) >= b: return False
         for eth in council_theses:
@@ -58,9 +54,7 @@ def solve():
             if t[eth] == v: return False
         return True
 
-    # ==========================================================
     # 3. THUẬT TOÁN XÂY DỰNG: PURE GREEDY
-    # ==========================================================
     def run_one_pass():
         curr_c_thesis = [0] * (N + 1)
         curr_c_teacher = [0] * (M + 1)
@@ -157,9 +151,7 @@ def solve():
 
         return curr_c_thesis, curr_c_teacher
 
-    # ==========================================================
-    # 4. HÀM TÍNH ĐIỂM (CÓ PHẠT ALPHA)
-    # ==========================================================
+    # 4. HÀM TÍNH ĐIỂM 
     def calculate_score(res_th, res_te):
         score = 0
         unassigned_th = res_th[1:].count(0)
@@ -184,9 +176,7 @@ def solve():
         score -= ALPHA * (unassigned_th + unassigned_te)
         return score
 
-    # ==========================================================
-    # 5. HILL CLIMBING (PATIENCE + UNASSIGNED HANDLING)
-    # ==========================================================
+    # 5. HILL CLIMBING 
     def hill_climbing(res_th, res_te, max_iter=100000, max_time=4.0, patience=3000):
         start_time = time.time()
         councils_th = [[] for i in range(K + 1)]
@@ -286,9 +276,7 @@ def solve():
 
         return res_th, res_te, current_score
 
-    # ==========================================================
-    # 6. MAIN LOOP (BATCH GREEDY STRATEGY)
-    # ==========================================================
+    # 6. MAIN LOOP 
     TOTAL_TIME = 90.0  # Time limit
     MAX_ITER_GREEDY = 500    # Chạy Greedy liên tục 1s để tìm ứng viên tốt nhất
     start_all = time.time()
@@ -298,19 +286,17 @@ def solve():
     best_score = -float('inf')
 
     while time.time() - start_all < TOTAL_TIME:
-        # --- PHASE 1: BATCH GREEDY (1s) ---
+        # PHASE 1: BATCH GREEDY (1s)
         batch_start = time.time()
         batch_best_th = None
         batch_best_te = None
         batch_best_score = -float('inf')
 
         for _ in range(MAX_ITER_GREEDY):
-            # Kiểm tra cả time limit tổng
             if time.time() - start_all > TOTAL_TIME: 
                 break
                 
             curr_th, curr_te = run_one_pass()
-            # Tính điểm ngay để so sánh (Score đã có phạt ALPHA)
             curr_score = calculate_score(curr_th, curr_te)
 
             if curr_score > batch_best_score:
@@ -318,9 +304,8 @@ def solve():
                 batch_best_th = curr_th[:]
                 batch_best_te = curr_te[:]
 
-        # --- PHASE 2: HILL CLIMBING TRÊN "NHÀ VÔ ĐỊCH" CỦA BATCH ---
+        # PHASE 2: HILL CLIMBING
         if batch_best_th is not None:
-            # Đầu tư nhiều thời gian (4s) và kiên nhẫn (3000) cho ứng viên tiềm năng này
             final_th, final_te, final_sc = hill_climbing(
                 batch_best_th, batch_best_te, 
                 max_iter=50000, 
